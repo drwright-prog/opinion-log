@@ -524,9 +524,25 @@ function clearForm() {
 }
 
 function deleteEntry(id) {
-  if (!confirm('Delete this entry?')) return;
-  save(load().filter(e => e.id !== id));
-  render();
+  const btn = document.querySelector(`[data-del="${id}"]`);
+  if (!btn) return;
+  if (btn.dataset.confirm === '1') {
+    save(load().filter(e => e.id !== id));
+    render();
+  } else {
+    btn.dataset.confirm = '1';
+    btn.textContent = 'Confirm?';
+    btn.style.color = '#c0392b';
+    btn.style.borderColor = '#c0392b';
+    setTimeout(() => {
+      if (btn && btn.dataset.confirm === '1') {
+        btn.dataset.confirm = '';
+        btn.textContent = '✕';
+        btn.style.color = '';
+        btn.style.borderColor = '';
+      }
+    }, 3000);
+  }
 }
 
 function setFilter(btn, val) {
@@ -586,7 +602,7 @@ function render() {
         <span class="hist-nhs">${nhsFmt}</span>
         <div class="hist-right">
           <span class="hist-dt">${dt}</span>
-          <button class="del-btn" onclick="deleteEntry(${e.id})" aria-label="Delete">✕</button>
+          <button class="del-btn" data-del="${e.id}" onclick="deleteEntry(${e.id})" aria-label="Delete">✕</button>
         </div>
       </div>
       <div class="tags">${tags}</div>
