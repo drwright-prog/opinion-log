@@ -617,8 +617,10 @@ function exportCSV() {
   a.click();
 }
 
-refreshDT();
-render();
+document.addEventListener('DOMContentLoaded', function() {
+  refreshDT();
+  render();
+});
 </script>
 </body>
 </html>
