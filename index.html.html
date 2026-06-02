@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Opinion Log">
+<title>Email Opinion Log</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f4f1;
+    --surface: #ffffff;
+    --surface2: #f0eeea;
+    --border: rgba(0,0,0,0.1);
+    --border-strong: rgba(0,0,0,0.18);
+    --text: #1a1a18;
+    --text2: #6b6a66;
+    --text3: #9b9a96;
+    --accent: #1a1a18;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141413;
+      --surface: #1f1f1d;
+      --surface2: #2a2a27;
+      --border: rgba(255,255,255,0.08);
+      --border-strong: rgba(255,255,255,0.15);
+      --text: #f0efe9;
+      --text2: #9b9a94;
+      --text3: #6b6a64;
+      --accent: #f0efe9;
+    }
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page { max-width: 520px; margin: 0 auto; padding: 16px 16px 80px; }
+
+  header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 20px 0 18px;
+    border-bottom: 0.5px solid var(--border-strong);
+    margin-bottom: 20px;
+  }
+  header h1 { font-size: 17px; font-weight: 600; letter-spacing: -0.02em; }
+  header span { font-size: 12px; color: var(--text3); }
+
+  .card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+
+  label.field-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 6px;
+  }
+
+  .datetime-pill {
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .datetime-pill .dt-value { font-size: 15px; font-weight: 500; color: var(--text); font-variant-numeric: tabular-nums; }
+  .dt-refresh {
+    font-size: 12px;
+    color: var(--text3);
+    background: none;
+    border: 0.5px solid var(--border-strong);
+    border-radius: 20px;
+    padding: 3px 10px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .dt-refresh:active { opacity: 0.6; }
+
+  input[type=text] {
+    width: 100%;
+    background: var(--surface2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 11px 12px;
+    font-size: 15px;
+    color: var(--text);
+    outline: none;
+    -webkit-appearance: none;
+  }
+  input[type=text]:focus { border-color: var(--border-strong); }
+  input[type=text]::placeholder { color: var(--text3); }
+
+  .hint { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+  .check-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-bottom: 0.5px solid var(--border);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-item:active { background: var(--border); }
+  .check-item input[type=checkbox] { display: none; }
+  .check-box {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    border: 1.5px solid var(--border-strong);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .check-box svg { display: none; }
+  .check-item input:checked ~ .check-box {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .check-item input:checked ~ .check-box svg { display: block; }
+  .check-label { font-size: 15px; color: var(--text); }
+
+  .outcome-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+  .outcome-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-bottom: 0.5px solid var(--border);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  .outcome-item:last-child { border-bottom: none; }
+  .outcome-item:active { background: var(--border); }
+  .outcome-item input[type=radio] { display: none; }
+  .radio-box {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border-strong);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .radio-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--bg);
+    display: none;
+  }
+  .outcome-item input:checked ~ .radio-box {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .outcome-item input:checked ~ .radio-box .radio-dot { display: block; }
+  .outcome-label { font-size: 15px; color: var(--text); }
+
+  textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 11px 12px;
+    font-size: 15px;
+    color: var(--text);
+    font-family: inherit;
+    outline: none;
+    resize: none;
+    height: 72px;
+    -webkit-appearance: none;
+  }
+  textarea:focus { border-color: var(--border-strong); }
+  textarea::placeholder { color: var(--text3); }
+
+  .btn-log {
+    width: 100%;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 4px;
+    -webkit-tap-highlight-color: transparent;
+    letter-spacing: -0.01em;
+  }
+  .btn-log:active { opacity: 0.8; transform: scale(0.99); }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 24px 0 10px;
+  }
+  .section-title { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text3); }
+
+  .stats-row { display: flex; gap: 8px; margin-bottom: 16px; }
+  .stat {
+    flex: 1;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 10px 8px;
+    text-align: center;
+  }
+  .stat-n { font-size: 22px; font-weight: 600; letter-spacing: -0.03em; color: var(--text); }
+  .stat-l { font-size: 10px; color: var(--text3); margin-top: 1px; line-height: 1.3; }
+
+  .history-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 13px 14px;
+    margin-bottom: 8px;
+  }
+  .hist-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+  .hist-nhs { font-size: 15px; font-weight: 600; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+  .hist-right { display: flex; align-items: center; gap: 8px; }
+  .hist-dt { font-size: 12px; color: var(--text3); white-space: nowrap; }
+  .del-btn {
+    background: none;
+    border: none;
+    padding: 2px 4px;
+    cursor: pointer;
+    color: var(--text3);
+    font-size: 16px;
+    line-height: 1;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .del-btn:active { color: #c0392b; }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 5px; }
+  .tag {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 9px;
+    border-radius: 20px;
+  }
+  .tag-hr { background: #dbeafe; color: #1e40af; }
+  .tag-xr { background: #dcfce7; color: #166534; }
+  .tag-email { background: #fef9c3; color: #854d0e; }
+  .tag-imaging { background: #ede9fe; color: #4c1d95; }
+  .tag-community { background: #dcfce7; color: #14532d; }
+  .tag-secondary { background: #fee2e2; color: #7f1d1d; }
+
+  @media (prefers-color-scheme: dark) {
+    .tag-hr { background: #1e3a5f; color: #93c5fd; }
+    .tag-xr { background: #14532d; color: #86efac; }
+    .tag-email { background: #422006; color: #fde68a; }
+    .tag-imaging { background: #2e1065; color: #c4b5fd; }
+    .tag-community { background: #052e16; color: #86efac; }
+    .tag-secondary { background: #450a0a; color: #fca5a5; }
+  }
+
+  .hist-notes { font-size: 13px; color: var(--text2); margin-top: 7px; line-height: 1.4; }
+
+  .filter-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .filter-btn {
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 0.5px solid var(--border-strong);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .filter-btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+  .export-btn {
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 0.5px solid var(--border-strong);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .export-btn:active { opacity: 0.6; }
+
+  .empty { text-align: center; padding: 32px 0; color: var(--text3); font-size: 14px; }
+
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--text);
+    color: var(--bg);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 20px;
+    border-radius: 20px;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <h1>Email Opinion Log</h1>
+    <span id="header-count"></span>
+  </header>
+
+  <!-- Entry form -->
+  <div class="card">
+    <div class="field">
+      <label class="field-label">Date &amp; time</label>
+      <div class="datetime-pill">
+        <span class="dt-value" id="dt-display">—</span>
+        <button class="dt-refresh" onclick="refreshDT()">Refresh</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">NHS number</label>
+      <input type="text" id="nhs" placeholder="000 000 0000" maxlength="12" inputmode="numeric" autocomplete="off" />
+      <p class="hint">10 digits — no name stored</p>
+    </div>
+
+    <div class="field">
+      <label class="field-label">What you did</label>
+      <div class="check-grid">
+        <label class="check-item">
+          <input type="checkbox" id="chk-hr">
+          <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="check-label">History review</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" id="chk-xr">
+          <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="check-label">XR review</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" id="chk-email">
+          <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="check-label">Email advice</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Outcome</label>
+      <div class="outcome-grid">
+        <label class="outcome-item">
+          <input type="radio" name="outcome" value="imaging">
+          <div class="radio-box"><div class="radio-dot"></div></div>
+          <span class="outcome-label">Further imaging</span>
+        </label>
+        <label class="outcome-item">
+          <input type="radio" name="outcome" value="community">
+          <div class="radio-box"><div class="radio-dot"></div></div>
+          <span class="outcome-label">Manage in community MSK</span>
+        </label>
+        <label class="outcome-item">
+          <input type="radio" name="outcome" value="secondary">
+          <div class="radio-box"><div class="radio-dot"></div></div>
+          <span class="outcome-label">See in secondary care</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Notes <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+      <textarea id="notes" placeholder="e.g. RC tear query, advised USS…"></textarea>
+    </div>
+
+    <button class="btn-log" onclick="addEntry()">Log entry</button>
+  </div>
+
+  <!-- History -->
+  <div id="history-section" style="display:none;">
+    <div class="stats-row" id="stats"></div>
+
+    <div class="section-header">
+      <span class="section-title">Log</span>
+      <button class="export-btn" onclick="exportCSV()">↓ CSV</button>
+    </div>
+
+    <div class="filter-row" style="margin-bottom:12px;">
+      <button class="filter-btn active" data-f="" onclick="setFilter(this,'')">All</button>
+      <button class="filter-btn" data-f="imaging" onclick="setFilter(this,'imaging')">Imaging</button>
+      <button class="filter-btn" data-f="community" onclick="setFilter(this,'community')">Community</button>
+      <button class="filter-btn" data-f="secondary" onclick="setFilter(this,'secondary')">Secondary</button>
+    </div>
+
+    <div id="history-list"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY = 'email_opinion_log_v1';
+let currentFilter = '';
+let capturedDT = null;
+
+function load() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; } }
+function save(e) { try { localStorage.setItem(KEY, JSON.stringify(e)); } catch {} }
+
+function nowISO() { return new Date().toISOString(); }
+
+function fmtDT(iso) {
+  const d = new Date(iso);
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const yy = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mn = String(d.getMinutes()).padStart(2,'0');
+  return dd+'/'+mm+'/'+yy+' '+hh+':'+mn;
+}
+
+function fmtNHS(raw) {
+  const d = raw.replace(/\D/g,'').slice(0,10);
+  if (d.length >= 7) return d.slice(0,3)+' '+d.slice(3,6)+' '+d.slice(6);
+  if (d.length >= 4) return d.slice(0,3)+' '+d.slice(3);
+  return d;
+}
+
+function refreshDT() {
+  capturedDT = nowISO();
+  document.getElementById('dt-display').textContent = fmtDT(capturedDT);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+document.getElementById('nhs').addEventListener('input', function() {
+  const pos = this.selectionStart;
+  this.value = fmtNHS(this.value);
+});
+
+function addEntry() {
+  const nhsRaw = document.getElementById('nhs').value.replace(/\D/g,'');
+  if (nhsRaw.length !== 10) { showToast('Enter a valid 10-digit NHS number'); return; }
+  const outcome = document.querySelector('input[name=outcome]:checked');
+  if (!outcome) { showToast('Select an outcome'); return; }
+
+  const actions = [];
+  if (document.getElementById('chk-hr').checked) actions.push('hr');
+  if (document.getElementById('chk-xr').checked) actions.push('xr');
+  if (document.getElementById('chk-email').checked) actions.push('email');
+
+  const entry = {
+    id: Date.now(),
+    nhs: nhsRaw,
+    datetime: capturedDT || nowISO(),
+    actions,
+    outcome: outcome.value,
+    notes: document.getElementById('notes').value.trim()
+  };
+
+  const entries = load();
+  entries.unshift(entry);
+  save(entries);
+  clearForm();
+  render();
+  showToast('Entry logged');
+}
+
+function clearForm() {
+  document.getElementById('nhs').value = '';
+  document.getElementById('chk-hr').checked = false;
+  document.getElementById('chk-xr').checked = false;
+  document.getElementById('chk-email').checked = false;
+  const sel = document.querySelector('input[name=outcome]:checked');
+  if (sel) sel.checked = false;
+  document.getElementById('notes').value = '';
+  refreshDT();
+}
+
+function deleteEntry(id) {
+  if (!confirm('Delete this entry?')) return;
+  save(load().filter(e => e.id !== id));
+  render();
+}
+
+function setFilter(btn, val) {
+  currentFilter = val;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function outcomeTag(v) {
+  const map = {
+    imaging: ['tag-imaging','Further imaging'],
+    community: ['tag-community','Community MSK'],
+    secondary: ['tag-secondary','Secondary care']
+  };
+  const [cls, label] = map[v] || ['',''];
+  return `<span class="tag ${cls}">${label}</span>`;
+}
+
+function render() {
+  const all = load();
+  const entries = currentFilter ? all.filter(e => e.outcome === currentFilter) : all;
+  const sec = document.getElementById('history-section');
+
+  document.getElementById('header-count').textContent = all.length ? all.length + ' entries' : '';
+
+  if (all.length === 0) { sec.style.display = 'none'; return; }
+  sec.style.display = 'block';
+
+  const t = {imaging:0, community:0, secondary:0};
+  all.forEach(e => { if(t[e.outcome]!==undefined) t[e.outcome]++; });
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><div class="stat-n">${all.length}</div><div class="stat-l">Total</div></div>
+    <div class="stat"><div class="stat-n">${t.imaging}</div><div class="stat-l">Imaging</div></div>
+    <div class="stat"><div class="stat-n">${t.community}</div><div class="stat-l">Community</div></div>
+    <div class="stat"><div class="stat-n">${t.secondary}</div><div class="stat-l">Secondary</div></div>
+  `;
+
+  const listEl = document.getElementById('history-list');
+  if (entries.length === 0) {
+    listEl.innerHTML = '<p class="empty">No entries for this filter.</p>';
+    return;
+  }
+
+  listEl.innerHTML = entries.map(e => {
+    const nhsFmt = e.nhs.slice(0,3)+' '+e.nhs.slice(3,6)+' '+e.nhs.slice(6);
+    const dt = e.datetime ? fmtDT(e.datetime) : (e.date || '');
+    const tags = [
+      e.actions.includes('hr') ? '<span class="tag tag-hr">History</span>' : '',
+      e.actions.includes('xr') ? '<span class="tag tag-xr">XR</span>' : '',
+      e.actions.includes('email') ? '<span class="tag tag-email">Email</span>' : '',
+      outcomeTag(e.outcome)
+    ].filter(Boolean).join('');
+    const notes = e.notes ? `<div class="hist-notes">${e.notes}</div>` : '';
+    return `<div class="history-card">
+      <div class="hist-top">
+        <span class="hist-nhs">${nhsFmt}</span>
+        <div class="hist-right">
+          <span class="hist-dt">${dt}</span>
+          <button class="del-btn" onclick="deleteEntry(${e.id})" aria-label="Delete">✕</button>
+        </div>
+      </div>
+      <div class="tags">${tags}</div>
+      ${notes}
+    </div>`;
+  }).join('');
+}
+
+function exportCSV() {
+  const entries = load();
+  if (!entries.length) return;
+  const rows = [['datetime','nhs_number','history_review','xr_review','email_advice','outcome','notes']];
+  entries.forEach(e => {
+    const dt = e.datetime ? fmtDT(e.datetime) : (e.date||'');
+    rows.push([
+      dt, e.nhs,
+      e.actions.includes('hr')?1:0,
+      e.actions.includes('xr')?1:0,
+      e.actions.includes('email')?1:0,
+      e.outcome,
+      '"'+(e.notes||'').replace(/"/g,'""')+'"'
+    ]);
+  });
+  const csv = rows.map(r=>r.join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download = 'email_opinion_log.csv';
+  a.click();
+}
+
+refreshDT();
+render();
+</script>
+</body>
+</html>
